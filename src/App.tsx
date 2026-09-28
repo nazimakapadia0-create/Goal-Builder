@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { GoalForm } from '@/components/GoalForm';
 import { GoalList } from '@/components/GoalList';
@@ -9,7 +10,7 @@ import type { Goal } from '@/types';
 type FilterType = 'all' | 'active' | 'completed';
 
 export default function App() {
-  const { goals, addGoal, toggleGoal, deleteGoal, clearCompleted } = useGoals();
+  const { goals, addGoal, toggleGoal, deleteGoal, clearCompleted, error } = useGoals();
   const [filter, setFilter] = useState<FilterType>('all');
 
   const filteredGoals = useMemo(() => {
@@ -33,6 +34,13 @@ export default function App() {
       <div className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
         <div className="animate-fade-in space-y-6">
           <Header />
+
+          {error && (
+            <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
 
           <GoalForm onAdd={addGoal} />
 
