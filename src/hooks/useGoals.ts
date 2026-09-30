@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { Goal, GoalCategory } from '@/types';
-import { supabase } from '@/lib/supabase';
+import { supabase, supabaseInitError } from '@/lib/supabase';
 import { rowToGoal, goalToInsert } from '@/lib/mappers';
 
 export function useGoals() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(supabaseInitError);
 
   const fetchGoals = useCallback(async () => {
+    if (!supabase) return;
     const { data, error } = await supabase
       .from('goals')
       .select('*')
@@ -31,6 +32,7 @@ export function useGoals() {
 
   const addGoal = useCallback(
     async (text: string, category: GoalCategory, targetDate: string) => {
+      if (!supabase) return;
       const { data, error } = await supabase
         .from('goals')
         .insert(goalToInsert({ text, category, targetDate }))
@@ -47,6 +49,7 @@ export function useGoals() {
   );
 
   const toggleGoal = useCallback(async (id: string) => {
+    if (!supabase) return;
     setGoals((prev) =>
       prev.map((g) => (g.id === id ? { ...g, completed: !g.completed } : g))
     );
@@ -60,12 +63,14 @@ export function useGoals() {
   }, [goals]);
 
   const deleteGoal = useCallback(async (id: string) => {
+    if (!supabase) return;
     setGoals((prev) => prev.filter((g) => g.id !== id));
     const { error } = await supabase.from('goals').delete().eq('id', id);
     if (error) setError(error.message);
   }, []);
 
   const clearCompleted = useCallback(async () => {
+    if (!supabase) return;
     const completedIds = goals.filter((g) => g.completed).map((g) => g.id);
     if (completedIds.length === 0) return;
     setGoals((prev) => prev.filter((g) => !g.completed));
