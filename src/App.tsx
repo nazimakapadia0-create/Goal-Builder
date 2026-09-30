@@ -1,74 +1,85 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { Header } from '@/components/Header';
-import { GoalForm } from '@/components/GoalForm';
-import { GoalList } from '@/components/GoalList';
-import { StatsBar } from '@/components/StatsBar';
+import type { PageId } from '@/types';
+import { Navigation } from '@/components/Navigation';
+import { Dashboard } from '@/pages/Dashboard';
+import { MyGoals } from '@/pages/MyGoals';
+import { Today } from '@/pages/Today';
+import { Progress } from '@/pages/Progress';
+import { Settings } from '@/pages/Settings';
 import { useGoals } from '@/hooks/useGoals';
-import type { Goal } from '@/types';
-
-type FilterType = 'all' | 'active' | 'completed';
 
 export default function App() {
-  const { goals, addGoal, toggleGoal, deleteGoal, clearCompleted, error } = useGoals();
-  const [filter, setFilter] = useState<FilterType>('all');
-
-  const filteredGoals = useMemo(() => {
-    const sorted = [...goals].sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
-      return b.createdAt - a.createdAt;
-    });
-    if (filter === 'active') return sorted.filter((g: Goal) => !g.completed);
-    if (filter === 'completed') return sorted.filter((g: Goal) => g.completed);
-    return sorted;
-  }, [goals, filter]);
-
-  const filters: { label: string; value: FilterType }[] = [
-    { label: 'All', value: 'all' },
-    { label: 'Active', value: 'active' },
-    { label: 'Completed', value: 'completed' },
-  ];
+  const [page, setPage] = useState<PageId>('dashboard');
+  const {
+    goals,
+    tasks,
+    reflections,
+    streakDays,
+    addGoal,
+    toggleGoal,
+    deleteGoal,
+    clearCompleted,
+    addTask,
+    toggleTask,
+    deleteTask,
+    addReflection,
+    deleteReflection,
+    error,
+  } = useGoals();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100">
-      <div className="mx-auto max-w-2xl px-4 py-10 sm:py-14">
-        <div className="animate-fade-in space-y-6">
-          <Header />
+    <div className="min-h-screen bg-slate-50">
+      <Navigation current={page} onNavigate={setPage} />
 
+      {/* Main content — offset for desktop sidebar */}
+      <main className="lg:pl-60">
+        <div className="mx-auto max-w-2xl px-4 pt-6 pb-28 sm:px-6 sm:pt-10 lg:pb-12">
           {error && (
-            <div className="flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
+            <div className="mb-4 flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600 ring-1 ring-red-100">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               {error}
             </div>
           )}
 
-          <GoalForm onAdd={addGoal} />
-
-          {goals.length > 0 && (
-            <>
-              <StatsBar goals={goals} onClearCompleted={clearCompleted} />
-
-              <div className="flex gap-1.5">
-                {filters.map((f) => (
-                  <button
-                    key={f.value}
-                    onClick={() => setFilter(f.value)}
-                    className={`rounded-lg px-3.5 py-1.5 text-xs font-medium transition-all ${
-                      filter === f.value
-                        ? 'bg-slate-800 text-white'
-                        : 'bg-white text-slate-500 ring-1 ring-slate-100 hover:bg-slate-50'
-                    }`}
-                  >
-                    {f.label}
-                  </button>
-                ))}
-              </div>
-            </>
+          {page === 'dashboard' && (
+            <Dashboard goals={goals} tasks={tasks} streakDays={streakDays} onNavigate={setPage} />
           )}
-
-          <GoalList goals={filteredGoals} onToggle={toggleGoal} onDelete={deleteGoal} />
+          {page === 'goals' && (
+            <MyGoals
+              goals={goals}
+              tasks={tasks}
+              onAddGoal={addGoal}
+              onToggleGoal={toggleGoal}
+              onDeleteGoal={deleteGoal}
+              onAddTask={addTask}
+              onToggleTask={toggleTask}
+              onDeleteTask={deleteTask}
+              onClearCompleted={clearCompleted}
+            />
+          )}
+          {page === 'today' && (
+            <Today
+              goals={goals}
+              tasks={tasks}
+              streakDays={streakDays}
+              onToggleTask={toggleTask}
+              onToggleGoal={toggleGoal}
+            />
+          )}
+          {page === 'progress' && (
+            <Progress
+              goals={goals}
+              tasks={tasks}
+              reflections={reflections}
+              streakDays={streakDays}
+              onAddReflection={addReflection}
+              onDeleteReflection={deleteReflection}
+            />
+          )}
+          {page === 'settings' && <Settings goals={goals} onClearCompleted={clearCompleted} />}
         </div>
-      </div>
+      </main>
     </div>
   );
 }

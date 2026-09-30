@@ -12,6 +12,27 @@
   body {
     @apply antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Prevent text size adjust on orientation change */
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Smooth scrolling */
+  * {
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar but keep functionality on mobile */
+  @media (max-width: 1023px) {
+    body {
+      overscroll-behavior-y: none;
+    }
   }
 }
 
@@ -75,5 +96,22 @@
 
   .animate-check-pop {
     animation: checkPop 0.3s ease-out;
+  }
+
+  /* Custom scrollbar for desktop */
+  @media (min-width: 1024px) {
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
   }
 }
